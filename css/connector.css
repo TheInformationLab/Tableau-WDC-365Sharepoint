@@ -1,0 +1,135 @@
+html,body{
+	height: 100%; margin: 0px; padding: 0px;
+}
+
+.full-container{
+	height: 100%;
+}
+
+h2{
+	color:#9B9797;
+	font-size: 18px;
+	font-family: sans-serif;
+	padding-left: 5px;
+	padding-top:17px;
+}
+select {
+	padding: 3px;
+	border-radius: 5px;
+}
+div.ajax-loading{
+	position: fixed;
+	top: 0;
+	left: 0;
+	height:100%;
+	width:100%;
+	z-index: 9999999;
+	/*background-image: url('../../images/loading-bgr.gif');*/
+	background-color: #e7e7e7;
+	opacity: 0.5;
+	display:none;
+}
+div.ajax-loading {
+	height:100%;
+	width:100%;
+	background-image: url('../images/loading.gif');
+	background-position: center center;
+	background-repeat: no-repeat;
+	/*opacity: 1;
+	filter: alpha(opacity=100); /* ie */
+	/*-moz-opacity: 1; /* mozilla */
+}
+#codeError {
+	color: red;
+	font-size: 12px;
+}
+#loadingMsg {
+	position: absolute;
+	text-align: center;
+	width: 500px;
+	height: 50px;
+	top: 50%;
+	left: 50%;
+	margin-left: -250px;
+	margin-top: 30px;
+}
+
+.button {
+	width: 200px;
+	background-color: #E97D32;
+	font-size: 14px;
+	color: white;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	text-align: center;
+}
+
+#codeDiv {
+	position: absolute;
+	left:50%;
+	width: 500px;
+	margin-left: -240px;
+	margin-top: 30px;
+}
+
+#headerDiv {
+	position: absolute;
+	left:50%;
+	width: 350px;
+	margin-left: -90px;
+	margin-top: 30px;
+}
+
+#TILLogo{
+	position: absolute;
+	top: 5px;
+	right: 10px;
+	width: 125px;
+}
+
+#origin{
+	width: 200px;
+	height: 25px;
+	padding-left: 5px;
+	font-family: 'Droid Sans', sans-serif;
+	margin-bottom: 5px;
+	border: 1px solid #BDBDBD;
+}
+
+#originLocation, #destinationLocation{
+	width: 190px;
+	height: 25px;
+	padding-left: 5px;
+	margin-left: 10px;
+	font-family: 'Droid Sans', sans-serif;
+	margin-bottom: 5px;
+	border: 1px solid #BDBDBD;
+}
+
+#origin, #destination{
+	width: 190px;
+	height: 25px;
+	padding-left: 5px;
+	margin-left: 10px;
+	font-family: 'Droid Sans', sans-serif;
+	margin-bottom: 5px;
+	margin-top: 10px;
+	border: 1px solid #BDBDBD;
+}
+
+#quandlCode:hover{
+	border: 1px solid #000;
+}
+
+.close {
+	background: none;
+	color: #888888;
+	border: none;
+	padding: 0 10 0 10;
+}
+
+#navMethodLabel {
+	font-size: 12px;
+	display: inline;
+	margin-left: 10px;
+}

@@ -1,0 +1,63 @@
+/*
+  Icon Font: fontcustom
+*/
+
+@font-face {
+  font-family: "fontcustom";
+  src: url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.eot");
+  src: url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.woff") format("woff"),
+       url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.ttf") format("truetype"),
+       url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.svg#fontcustom") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "fontcustom";
+    src: url("../fonts/fontcustom_6055d89bbc2acf6c2bd62751eb99a41e.svg#fontcustom") format("svg");
+  }
+}
+
+[data-icon]:before { content: attr(data-icon); }
+
+[data-icon]:before,
+.icon-Mapbox:before,
+.icon-Moves:before,
+.icon-Runkeeper:before,
+.icon-Yupana:before,
+.icon-alteryx:before,
+.icon-fitbit:before,
+.icon-googlefit:before,
+.icon-parsehub:before,
+.icon-pingdom:before,
+.icon-quandl:before,
+.icon-sharepoint:before,
+.icon-strava:before {
+  display: inline-block;
+  font-family: "fontcustom";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-decoration: inherit;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+}
+
+.icon-Mapbox:before { content: "\f115"; }
+.icon-Moves:before { content: "\f116"; }
+.icon-Runkeeper:before { content: "\f117"; }
+.icon-Yupana:before { content: "\f118"; }
+.icon-alteryx:before { content: "\f119"; }
+.icon-fitbit:before { content: "\f11a";padding-left: 5px;padding-right: 5px;  }
+.icon-googlefit:before { content: "\f11b"; }
+.icon-parsehub:before { content: "\f11c"; }
+.icon-pingdom:before { content: "\f11d"; }
+.icon-quandl:before { content: "\f11e"; }
+.icon-sharepoint:before { content: "\f11f"; }
+.icon-strava:before { content: "\f120"; }

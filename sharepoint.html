@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+	<meta http-equiv="Cache-Control" content="no-store" />
+	<head>
+	  <meta charset="utf-8">
+	  <title>Office 365 Sharepoint Web Data Connector for Tableau by The Information Lab</title>
+	  <meta name="application-name" content="Office 365 Sharepoint Web Data Connector for Tableau by The Information Lab">
+	  <meta name="author" content="The Information Lab">
+		<meta name="description" content="Office 365 Sharepoint Web Data Connector for Tableau by The Information Lab">
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <!--<link href='http://fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>-->
+	  <link rel="stylesheet" href="css/normalize.css">
+	  <link rel="stylesheet" href="css/skeleton.css">
+	  <link rel="stylesheet" href="css/sharepoint-main.css">
+		<link rel="stylesheet" href="css/connector.css">
+	  <link href="css/bootstrap.min.css" rel="stylesheet">
+	  <link href="css/font-awesome.min.css" rel="stylesheet">
+	  <link href="css/yay.min.css" rel="stylesheet">
+		<link href="css/fontcustom.css" rel="stylesheet">
+		<link href="css/jquery-ui.min.css" rel="stylesheet">
+		<script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js"></script>
+		<script src="js/jquery.cookie.js"></script>
+	<script src="https://connectors.tableau.com/libs/tableauwdc-2.0.0-beta.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+
+	var getQueryParams = function (qs) {
+			qs = qs.split("+").join(" ");
+
+			var params = {}, tokens,
+					re = /[?&]?([^=]+)=([^&]*)/g;
+
+			while (tokens = re.exec(qs)) {
+					params[decodeURIComponent(tokens[1])]
+							= decodeURIComponent(tokens[2]);
+			}
+
+			return params;
+	}
+	var hasAuth = false;
+	var myConnector = tableau.makeConnector();
+	myConnector.init = function(initCallback) {
+
+
+		if (tableau.phase == tableau.phaseEnum.interactivePhase || tableau.phase == tableau.phaseEnum.authPhase) {
+			console.log("Tableau WDC Detected");
+			var curURL = window.location.href;
+			curURL = curURL.replace("#","?");
+			var query = getQueryParams(curURL);
+			if (query["http://data.theinformationlab.co.uk/sharepoint.html?access_token"]){
+				var access_token = query["http://data.theinformationlab.co.uk/sharepoint.html?access_token"];
+				var sharepointURL = query["state"];
+				hasAuth = true;
+				myConnector.setConnection(access_token,sharepointURL);
+				if (tableau.phase == tableau.phaseEnum.authPhase) {
+					// Auto-submit here if we are in the auth phase
+					console.log("Entering Auth Phase");
+					tableau.submit()
+				}
+			} else if (tableau.connectionData && tableau.password) {
+				hasAuth = true;
+				if (tableau.phase == tableau.phaseEnum.authPhase) {
+					console.log("Entering Auth Phase");
+					// Auto-submit here if we are in the auth phase
+					tableau.submit()
+				}
+			}
+		}
+
+		if (tableau.phase == tableau.phaseEnum.interactivePhase) {
+			console.log("Entering Interactive Phase");
+			if (!hasAuth) {
+				$('.noTableau').hide();
+				$('.welcome').show();
+				$('#getlists').bind('click', function(){
+					var sharepointURL = $('#sharepointURL').val().trim();
+					console.log(sharepointURL);
+					myConnector.setConnection("",sharepointURL);
+					$('.ajax-loading').show();
+
+					var clientId    = '695223d4-07b9-45f9-9d72-4911824fe6a5';
+	  			var replyUrl    = 'http://data.theinformationlab.co.uk/sharepoint.html';
+	  			var endpointUrl = sharepointURL + '/_api/Web/Lists';
+	  			var resource = sharepointURL;
+
+	  			var authServer  = 'https://login.windows.net/common/oauth2/authorize?';
+	  			var responseType = 'token';
+
+	  			var url = authServer +
+	            "response_type=" + encodeURI(responseType) + "&" +
+	            "client_id=" + encodeURI(clientId) + "&" +
+	            "resource=" + encodeURI(resource) + "&" +
+	            "redirect_uri=" + encodeURI(replyUrl) + "&" +
+							"state=" +encodeURI(resource);
+
+	  			window.location = url;
+
+				});
+			} else {
+				tableau.submit();
+			}
+		}
+		initCallback();
+	};
+
+	myConnector.getSchema = function(schemaCallback) {
+		var sharepointURL = tableau.connectionData;
+		var access_token = tableau.password;
+		var settings = {
+			"async": true,
+			"crossDomain": true,
+			"url": sharepointURL+"/_api/web/lists",
+			"method": "GET",
+			"headers": {
+				"authorization": "Bearer " + access_token,
+				"cache-control": "no-cache",
+				"accept": "application/json;odata=verbose",
+				"content-type": "application/json;odata=verbose"
+			}
+		}
+		$.ajax(settings).done(function (response) {
+			var lists = response.d.results;
+			var realLists = [];
+			for (var i = 0; i < lists.length; i++) {
+				var listType = lists[i].EntityTypeName;
+				if (listType.search("List") > 0) {
+					realLists.push(lists[i]);
+				}
+				if (i == lists.length - 1) {
+					getSchemaJson(sharepointURL, realLists, function(schemaJson) {
+						schemaCallback(schemaJson);
+					});
+				}
+			}
+		});
+	};
+
+	myConnector.getData = function(table, doneCallback) {
+
+		var sharepointURL = tableau.connectionData;
+		var tableName = table.tableInfo.alias;
+		var columns = table.tableInfo.columns;
+		var moreData = false;
+
+		var url = sharepointURL + "/_api/web/lists/GetByTitle('"+tableName+"')/items";
+
+		var result = getRecords(url, [], function(data) {
+			table.appendRows(data);
+			doneCallback();
+		});
+	};
+
+	myConnector.setConnection = function(access_token,sharepointURL) {
+		tableau.connectionData = sharepointURL;
+		tableau.password = access_token;
+		tableau.connectionName = "Office 365 Sharepoint ("+sharepointURL+")";
+		console.log("URL:" + tableau.connectionData);
+		console.log("Conn Data Set");
+	};
+
+	tableau.registerConnector(myConnector);
+
+	var getRecords = function (url, dataset, callback) {
+		var settings = {
+			"async": true,
+			"crossDomain": true,
+			"url": url,
+			"method": "GET",
+			"headers": {
+				"authorization": "Bearer " + tableau.password,
+				"cache-control": "no-cache",
+				"accept": "application/json;odata=verbose",
+				"content-type": "application/json;odata=verbose"
+			}
+		}
+		$.ajax(settings).done(function (response) {
+			var data = response.d.results;
+			dataset.push.apply(dataset, data);
+			if (response.d.__next) {
+				getRecords(response.d.__next, dataset, callback);
+			} else if (data.length == 0) {
+				tableau.abortWithError("No data found");
+			} else {
+				callback(dataset);
+			}
+		});
+	}
+
+	var renameFields = function(data, fromArr, toArr, callback) {
+		//console.log(data);
+		var returnData = data;
+		for (var i=0; i < fromArr.length; i++) {
+			returnData[toArr[i]] = data[fromArr[i]];
+			//delete returnData[fromArr[i]];
+		}
+		//console.log(returnData);
+		callback(returnData);
+	}
+
+	var getSchemaJson = function(sharepointURL, lists, callback) {
+		var schemaJson = [];
+		var jsonCount = 0;
+		for (var i = 0; i < lists.length; i++) {
+			buildTableJSON(sharepointURL,lists[i].Id, lists[i].Title, function(tableJSON) {
+				schemaJson.push(tableJSON);
+				if (i - 1 == jsonCount) {
+					console.log("Doing getSchemaJson callback");
+					callback(schemaJson);
+				} else {
+					jsonCount = jsonCount + 1;
+				}
+			});
+		}
+	}
+
+	var buildTableJSON = function(sharepointURL,listID, listAlias, callback) {
+		console.log("Getting List fields");
+		var tableObj = {};
+		tableObj.id = listID.replace(/\-/g,"_");
+		tableObj.alias = listAlias;
+		var columns = [];
+		var settings = {
+  		"async": true,
+  		"crossDomain": true,
+  		"url": sharepointURL + "/_api/Web/Lists(guid%27"+listID+"%27)/fields",
+  		"method": "GET",
+  		"headers": {
+    		"authorization": "Bearer " + tableau.password,
+    		"cache-control": "no-cache",
+				"accept": "application/json;odata=verbose",
+				"content-type": "application/json;odata=verbose"
+  		}
+		}
+
+		$.ajax(settings).done(function (response) {
+		  var questions = response.d.results;
+			for (var i = 0; i < questions.length; i++) {
+				var column = {};
+				if(!questions[i].Hidden) {
+					column.dataType = 'string';
+					switch(questions[i].TypeAsString) {
+						case "Number":
+							column.dataType = 'float';
+							break;
+						case "Currency":
+							column.dataType = 'float';
+							break;
+						case "DateTime":
+							column.dataType = 'datetime';
+							break;
+						case "Boolean":
+							column.dataType = 'bool';
+							break;
+						case "Integer":
+							column.dataType = 'int';
+							break;
+					}
+					var colTitle = questions[i].Title;
+					column.alias = colTitle.replace(/\s/g,"");
+					column.id = questions[i].InternalName;
+					columns.push(column);
+				}
+			}
+			tableObj.columns = columns;
+			console.log(tableObj);
+			callback(tableObj);
+		});
+
+	}
+
+	$(document).ready(function() {
+
+	});
+	</script>
+</head>
+<body class="yay-hide">
+<div class="full-container">
+  <!-- Bootstrap top navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+
+      <!-- Yay toggle button -->
+      <button class="btn btn-default navbar-btn yay-toggle" type="button"><i class="fa fa-bars"></i></button>
+
+      <a class="navbar-brand" href="#"></a>
+
+    </div><!-- /.container-fluid -->
+  </nav>
+  <!-- /Bootstrap top navbar -->
+
+  <div class="yaybar yay-shrink yay-hide-to-small yay-gestures yay-overlap-content yay-light">
+    <div class="nano">
+      <div class="nano-content">
+
+				<ul>
+					<li class="label">Blending Data</li>
+					<li>
+						<a href="alteryx.html"><i class="icon-alteryx" style="font-size:22px"></i>Alteryx Gallery</a>
+					</li>
+					<li>
+						<a href="parsehub.html"><i class="icon-parsehub" style="font-size:22px"></i>ParseHub</a>
+					</li>
+					<li>
+						<a href="pingdom.html"><i class="icon-pingdom" style="font-size:22px"></i>Pingdom</a>
+					</li>
+					<li>
+						<a href="quandl.html"><i class="icon-quandl" style="font-size:22px"></i>Quandl</a>
+					</li>
+					<li class="active">
+						<a href="sharepoint.html"><i class="icon-sharepoint" style="font-size:22px"></i>SharePoint</a>
+					</li>
+					<li class="label">Quantified Self</li>
+					<li>
+            <a href="fitbit.html"><i class="icon-fitbit" style="font-size:22px"></i>Fitbit</a>
+          </li>
+					<li>
+						<a href="strava.html"><i class="icon-strava" style="font-size:22px"></i>Strava</a>
+					</li>
+					<li>
+						<a href="runkeeper.html"><i class="icon-Runkeeper" style="font-size:22px"></i>Runkeeper</a>
+					</li>
+					<li>
+						<a href="moves.html"><i class="icon-Moves" style="font-size:22px"></i>Moves</a>
+					</li>
+					<li>
+						<a href="googlefit.html"><i class="icon-googlefit" style="font-size:22px"></i>Google Fit</a>
+					</li>
+					<li class="label">Geocoding</li>
+					<li>
+						<a href="directions.html"><i class="icon-Mapbox" style="font-size:22px"></i>Mapbox Directions</a>
+					</li>
+					<li class="label">Created by The Information Lab</li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+  <!-- /Yay Sidebar -->
+<div class="content-wrap">
+<div class='ajax-loading' id='loadingDiv'> </div>
+<div class="section noTableau">
+		<div class="tableauContainer ">
+			 <h4 class="section-heading centre">Welcome to the Office 365 Sharepoint Web Data Connector for Tableau</h4>
+			 <p class="centre"> <img src="images/sharepoint.png" alt="sharepoint" style="width:450px;height:100px;"> </p>
+			 <p class="section-description centre">Please open this web data connector in Tableau version 10.0 or greater.<br/><a href="http://www.tableausoftware.com/partner-trial?id=19124">Click here to download a trial</a></p>
+			 <p class="section-logo centre"><a href="http://www.theinformationlab.co.uk"><img src="images/logo.png" alt="The Information Lab" style="width:188px;height:75px;"></a></p>
+		</div>
+</div>
+ <div class="section welcome">
+ 		 <div class="tableauContainer ">
+ 				<h4 class="section-heading centre">Welcome to the Office 365 Sharepoint Web Data Connector for Tableau</h4>
+ 				<p class="centre"> <img src="images/sharepoint.png" alt="sharepoint" style="width:450px;height:100px;"> </p>
+				<div class="credentials centre">
+				<div class="group">
+					<input class="inputMaterial" type="text"  id="sharepointURL" placeholder='https://example.sharepoint.com'>
+					<span class="highlight"></span>
+					<span class="bar"></span>
+					<label>Sharepoint Base URL</label>
+				</div>
+			</div>
+			<div class="questionTableDiv centre"></div>
+				<p class="section-description centre"><a class='button button-primary button-margin' id='getlists'>Get Data!</a></p>
+				<p class="section-description centre">Note! Requires Tableau 10.0 or greater.</p>
+ 				<p class="section-logo centre"><a href="http://www.theinformationlab.co.uk"><img src="images/logo.png" alt="The Information Lab" style="width:188px;height:75px;"></a></p>
+ 		 </div>
+ </div>
+ </div>
+</div>
+
+ <script src="js/bootstrap.min.js"></script>
+ <script src="js/jquery.nanoscroller.min.js"></script>
+ <script src="js/yay.min.js"></script>
+
+</body>
+</html>

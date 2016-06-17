@@ -1,0 +1,130 @@
+body {background: url(labs_clear.png) bottom left no-repeat fixed;
+		background-position-x: 60px
+}
+
+table {
+	margin: auto;
+}
+
+label {
+	padding: 10px 20px 5px 5px;
+}
+
+.section{ min-height: 100%;
+		  max-width: 850px;
+		  padding-top: 55px;
+		  margin:auto;
+		}
+
+.centre { text-align:center;}
+
+.button-margin { margin-top:30px;}
+
+.group 			  {
+  position:relative;
+  margin: auto;
+	max-width: 300px;
+	text-align: center;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
+.inputMaterial 				{
+  font-size:16px;
+  padding:10px 10px 10px 5px;
+  display:block;
+  width:330px;
+  border:none;
+  border-bottom:1px solid #757575;
+}
+
+.inputMaterial:focus 		{ outline:none;}
+
+.questionTable {
+	margin-top: 30px;
+}
+
+.questionTable tr {
+	height: 50px;
+}
+
+.questionTable td {
+	padding-right: 20px;
+}
+
+.spinner{
+	width: 220px;
+}
+
+input[type="email"], input[type="search"], input[type="text"], input[type="tel"], input[type="url"], input[type="password"], textarea {
+	width: 330px;
+}
+
+/* LABEL ======================================= */
+
+label 				 {
+  color:#999;
+  font-size:14px;
+  font-weight:normal;
+  position:absolute;
+  pointer-events:none;
+  left:5px;
+  top:10px;
+  transition:0.2s ease all;
+  -moz-transition:0.2s ease all;
+  -webkit-transition:0.2s ease all;
+}
+
+/* active state */
+.inputMaterial:focus ~ label, .inputMaterial:valid ~ label 		{
+  top:-20px;
+  font-size:14px;
+  color: #4692CF;
+}
+
+/* BOTTOM BARS ================================= */
+.bar 	{ position:relative; display:block; width:330px; }
+.bar:before, .bar:after 	{
+  content:'';
+  height:2px;
+  width:0;
+  bottom:-1px;
+  position:absolute;
+  background: #4692CF;
+  transition:0.2s ease all;
+  -moz-transition:0.2s ease all;
+  -webkit-transition:0.2s ease all;
+}
+.bar:before {
+  left:50%;
+}
+.bar:after {
+  right:50%;
+}
+
+/* active state */
+.inputMaterial:focus ~ .bar:before, .inputMaterial:focus ~ .bar:after {
+  width:50%;
+}
+
+
+/* active state */
+.inputMaterial:focus ~ .highlight {
+  -webkit-animation:inputHighlighter 0.3s ease;
+  -moz-animation:inputHighlighter 0.3s ease;
+  animation:inputHighlighter 0.3s ease;
+}
+
+/* ANIMATIONS ================ */
+@-webkit-keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
+@-moz-keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
+@keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
